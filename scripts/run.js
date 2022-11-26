@@ -7,30 +7,52 @@ const main = async () => {
   ///////////////////////////////////////////
   // CONTRACT DEPLOYMENT
   const waveContractFactory = await hre.ethers.getContractFactory("WavePortal"); // compiles the contract
-  const waveContract = await waveContractFactory.deploy(); // creates a local Ethereum network (gets destroyed at the end of the script) and deploys the contract
+  const waveContract = await waveContractFactory.deploy({
+    value: hre.ethers.utils.parseEther("0.1"),
+  }); // creates a local Ethereum network (gets destroyed at the end of the script) and deploys the contract funding it with 0.1 eth from deployer address
   await waveContract.deployed();
   console.log("Contract deployed to:", waveContract.address); // waveContract.address give the address of the deployed contract
   console.log("Contract deployed by:", owner.address);
 
   ///////////////////////////////////////////
   // INTERACTING WITH THE CONTRACT
+  let contractBalance = await hre.ethers.provider.getBalance(
+    waveContract.address
+  );
+  console.log(
+    "Contract balance:",
+    hre.ethers.utils.formatEther(contractBalance)
+  );
+
   let waveCount;
   // Manually calling contract functions, it's like using API
   waveCount = await waveContract.getTotalWaves();
-  console.log("Wave count BEFORE interacting:", waveCount.toNumber());
+  console.log("Wave count before interacting:", waveCount.toNumber());
 
   // Send a few waves
   let waveTxn = await waveContract.wave("A message!");
   await waveTxn.wait(); // Wait for the transaction to be mined
 
+  contractBalance = await hre.ethers.provider.getBalance(waveContract.address);
+  console.log(
+    "Contract balance after 1st wave:",
+    hre.ethers.utils.formatEther(contractBalance)
+  );
+
   waveTxn = await waveContract.connect(randomPerson).wave("Another message!");
   await waveTxn.wait(); // Wait for the transaction to be mined
+
+  contractBalance = await hre.ethers.provider.getBalance(waveContract.address);
+  console.log(
+    "Contract balance after 2nd wave:",
+    hre.ethers.utils.formatEther(contractBalance)
+  );
 
   const allWaves = await waveContract.getAllWaves();
   console.log(allWaves);
 
   waveCount = await waveContract.getTotalWaves();
-  console.log("Wave count AFTER interacting:", waveCount.toNumber());
+  console.log("Wave count after interacting:", waveCount.toNumber());
 };
 
 const runMain = async () => {
