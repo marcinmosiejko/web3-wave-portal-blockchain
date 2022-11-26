@@ -20,7 +20,8 @@ contract WavePortal {
     // Array of Wave structs that lets us hold all the waves anyone ever sends
     Wave[] waves;
 
-    constructor() {
+    // payable keyword allows the contract to pay (send) money to addresses
+    constructor() payable { 
         console.log("Gm frens");
     }
 
@@ -31,6 +32,16 @@ contract WavePortal {
         waves.push(Wave(msg.sender, _message, block.timestamp));
 
         emit NewWave(msg.sender, block.timestamp, _message);
+
+        uint256 prizeAmount = 0.0001 ether;
+        // Check if contract has more money then prizeAmount, if not it will quit the function
+        require(
+        prizeAmount <= address(this).balance,
+        "Trying to withdraw more money than the contract has."
+        );
+        // Send prize money to the waver
+        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+        require(success, "Failed to withdraw money from contract.");
     }
 
     function getAllWaves() public view returns (Wave[] memory) {
