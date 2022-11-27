@@ -39,7 +39,7 @@ const main = async () => {
     hre.ethers.utils.formatEther(contractBalance)
   );
 
-  waveTxn = await waveContract.connect(randomPerson).wave("Message #2!");
+  waveTxn = await waveContract.wave("Message #2!");
   await waveTxn.wait(); // Wait for the transaction to be mined
 
   contractBalance = await hre.ethers.provider.getBalance(waveContract.address);
