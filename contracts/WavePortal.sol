@@ -21,6 +21,9 @@ contract WavePortal {
     // Array of Wave structs that lets us hold all the waves anyone ever sends
     Wave[] waves;
 
+    // To store the address with the last time the user waved at us
+    mapping(address => uint256) public lastWavedAt;
+
     // payable keyword allows the contract to pay (send) money to addresses
     constructor() payable { 
         console.log("Gm frens");
@@ -30,6 +33,15 @@ contract WavePortal {
     }
 
     function wave(string memory _message) public {
+        // We make sure the current timestamp is at least 15-minutes bigger than the last timestamp we stored for a 15 min cooldown
+        require(
+            lastWavedAt[msg.sender] + 15 minutes < block.timestamp,
+            "Wait 15m"
+        );
+        // Update the current timestamp we have for the user
+        lastWavedAt[msg.sender] = block.timestamp;
+
+
         totalWaves += 1;
         console.log("%s waved w/ message %s", msg.sender, _message);
 
