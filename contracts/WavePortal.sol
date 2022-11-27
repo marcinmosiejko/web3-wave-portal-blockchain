@@ -35,8 +35,8 @@ contract WavePortal {
     function wave(string memory _message) public {
         // We make sure the current timestamp is at least 15-minutes bigger than the last timestamp we stored for a 15 min cooldown
         require(
-            lastWavedAt[msg.sender] + 15 minutes < block.timestamp,
-            "Wait 15m"
+            lastWavedAt[msg.sender] + 5 minutes < block.timestamp,
+            "Wait 5m"
         );
         // Update the current timestamp we have for the user
         lastWavedAt[msg.sender] = block.timestamp;
@@ -51,7 +51,7 @@ contract WavePortal {
         seed = (block.difficulty + block.timestamp + seed) % 100;
 
         // Give a 50% chance that the user wins the prize
-        if (seed < 50) {
+        if (seed < 10) {
             uint256 prizeAmount = 0.0001 ether;
             // Check if contract has more money then prizeAmount, if not it will quit the function
             require(
