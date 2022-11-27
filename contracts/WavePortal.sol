@@ -6,7 +6,8 @@ import "hardhat/console.sol";
 
 contract WavePortal {
     uint256 totalWaves; // state variable
-   
+    uint256 private seed; // to generate random number
+
     // When an event is emitted, it stores the arguments passed in transaction logs
     event NewWave(address indexed from, uint256 timestamp, string message);
 
@@ -23,6 +24,9 @@ contract WavePortal {
     // payable keyword allows the contract to pay (send) money to addresses
     constructor() payable { 
         console.log("Gm frens");
+
+        // Set the initial seed to generate random number
+        seed = (block.timestamp + block.difficulty) % 100;
     }
 
     function wave(string memory _message) public {
@@ -31,17 +35,23 @@ contract WavePortal {
 
         waves.push(Wave(msg.sender, _message, block.timestamp));
 
-        emit NewWave(msg.sender, block.timestamp, _message);
+        // Generate a new seed for the next user that sends a wave
+        seed = (block.difficulty + block.timestamp + seed) % 100;
 
-        uint256 prizeAmount = 0.0001 ether;
-        // Check if contract has more money then prizeAmount, if not it will quit the function
-        require(
-        prizeAmount <= address(this).balance,
-        "Trying to withdraw more money than the contract has."
-        );
-        // Send prize money to the waver
-        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
-        require(success, "Failed to withdraw money from contract.");
+        // Give a 50% chance that the user wins the prize
+        if (seed < 50) {
+            uint256 prizeAmount = 0.0001 ether;
+            // Check if contract has more money then prizeAmount, if not it will quit the function
+            require(
+            prizeAmount <= address(this).balance,
+            "Trying to withdraw more money than the contract has."
+            );
+            // Send prize money to the waver
+            (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+            require(success, "Failed to withdraw money from contract.");
+        }
+        
+        emit NewWave(msg.sender, block.timestamp, _message);
     }
 
     function getAllWaves() public view returns (Wave[] memory) {
